@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vivek | Space Portfolio</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html,body{width:100%;height:100%;overflow:hidden;background:#000008;}
+    #root{width:100%;height:100%;}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useEffect, useRef, useState, useCallback } = React;
+const THREE = window.THREE;
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   NARUTO 9-TAILS SEAL TEXTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function buildSealTexture() {
+  const S=1024,cx=S/2,cy=S/2;
+  const cv=document.createElement("canvas"); cv.width=cv.height=S;
+  const c=cv.getContext("2d");
+  c.fillStyle="#090003"; c.fillRect(0,0,S,S);
+  const bg=c.createRadialGradient(cx,cy,0,cx,cy,S*0.5);
+  bg.addColorStop(0,"rgba(200,40,0,0.22)"); bg.addColorStop(0.55,"rgba(90,6,0,0.12)"); bg.addColorStop(1,"transparent");
+  c.fillStyle=bg; c.fillRect(0,0,S,S);
+  for(let i=0;i<9;i++){c.beginPath();c.arc(cx,cy,52+i*50,0,Math.PI*2);c.strokeStyle=`rgba(255,${44+i*20},0,${0.58-i*0.044})`;c.lineWidth=i<2?3.5:1.6;c.stroke();}
+  for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2;c.beginPath();c.moveTo(cx+Math.cos(a)*52,cy+Math.sin(a)*52);c.lineTo(cx+Math.cos(a)*460,cy+Math.sin(a)*460);c.strokeStyle="rgba(255,55,0,0.22)";c.lineWidth=1;c.stroke();}
+  for(let ring=0;ring<8;ring++){const r=52+ring*50;for(let i=0;i<72;i++){const a=(i/72)*Math.PI*2;c.beginPath();c.moveTo(cx+Math.cos(a)*(r-8),cy+Math.sin(a)*(r-8));c.lineTo(cx+Math.cos(a)*(r+8),cy+Math.sin(a)*(r+8));c.strokeStyle=`rgba(255,70,0,${i%6===0?0.42:0.11})`;c.lineWidth=i%6===0?1.6:0.7;c.stroke();}}
+  c.save(); c.translate(cx,cy);
+  for(let r=-5;r<=5;r++){const a=0.11-Math.abs(r)*0.008;c.beginPath();c.moveTo(-190,r*26);c.lineTo(190,r*26);c.strokeStyle=`rgba(255,50,0,${a})`;c.lineWidth=0.7;c.stroke();c.beginPath();c.moveTo(r*26,-190);c.lineTo(r*26,190);c.strokeStyle=`rgba(255,50,0,${a})`;c.lineWidth=0.7;c.stroke();}
+  c.restore();
+  for(let t=0;t<2;t++){c.beginPath();for(let j=0;j<4;j++){const a=t*(Math.PI/3)+(j/3)*Math.PI*2-Math.PI/2;j===0?c.moveTo(cx+Math.cos(a)*148,cy+Math.sin(a)*148):c.lineTo(cx+Math.cos(a)*148,cy+Math.sin(a)*148);}c.closePath();c.strokeStyle="rgba(255,68,0,0.40)";c.lineWidth=1.8;c.stroke();}
+  c.beginPath();for(let t=0.14;t<Math.PI*5.6;t+=0.038){const r=t*7.8,x=cx+Math.cos(t)*r,y=cy+Math.sin(t)*r;t<0.18?c.moveTo(x,y):c.lineTo(x,y);}c.strokeStyle="rgba(255,148,0,0.92)";c.lineWidth=3.0;c.stroke();
+  c.beginPath();for(let t=0.14;t<Math.PI*4.2;t+=0.048){const r=t*9.5,x=cx+Math.cos(-t+Math.PI)*r,y=cy+Math.sin(-t+Math.PI)*r;t<0.18?c.moveTo(x,y):c.lineTo(x,y);}c.strokeStyle="rgba(255,55,0,0.54)";c.lineWidth=2.0;c.stroke();
+  c.textAlign="center";c.textBaseline="middle";
+  "封印九尾禁術陰陽空無天地".split("").forEach((k,i)=>{const a=(i/12)*Math.PI*2-Math.PI/2;c.save();c.translate(cx+Math.cos(a)*318,cy+Math.sin(a)*318);c.rotate(a+Math.PI/2);c.font="bold 32px serif";c.fillStyle=`rgba(255,${88+i*8},0,0.74)`;c.fillText(k,0,0);c.restore();});
+  "封禁解術".split("").forEach((k,i)=>{const a=(i/4)*Math.PI*2-Math.PI/4;c.save();c.translate(cx+Math.cos(a)*195,cy+Math.sin(a)*195);c.font="bold 42px serif";c.fillStyle="rgba(255,148,0,0.86)";c.fillText(k,0,0);c.restore();});
+  for(let ring=0;ring<8;ring++){const r=52+ring*50;for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2;c.beginPath();c.arc(cx+Math.cos(a)*r,cy+Math.sin(a)*r,ring<2?3.8:2.3,0,Math.PI*2);c.fillStyle=`rgba(255,${72+ring*18},0,0.77)`;c.fill();}}
+  c.font="bold 82px serif";c.fillStyle="rgba(255,198,0,0.97)";c.fillText("九",cx,cy-30);
+  c.font="bold 48px serif";c.fillStyle="rgba(255,95,0,0.94)";c.fillText("尾",cx,cy+44);
+  return new THREE.CanvasTexture(cv);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DATA — 6 SECTIONS (added VIDEO)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const SECTIONS = ["HOME","ABOUT","WORK","SKILLS","VIDEO","CONTACT"];
+
+const PROJECTS = [
+  {title:"3D Portfolio v2",  emoji:"🌌", desc:"Immersive 3D portfolio with Three.js space world and scroll-driven navigation.", tags:["#react","#threejs","#webgl"],     link:"https://vivekyadav011432.github.io/Portfolio./"},
+  {title:"Firework Show",    emoji:"🎆", desc:"Interactive fireworks with real-time particle explosions and dynamic sky effects.",  tags:["#canvas","#particles","#js"],   link:"https://vivekyadav011432.github.io/Firework-project/"},
+  {title:"3D World Map",     emoji:"🌍", desc:"Interactive 3D globe — explore countries and regions in WebGL.",                   tags:["#threejs","#globe","#webgl"],    link:"https://vivekyadav011432.github.io/world-map/"},
+  {title:"Snake Game",       emoji:"🐍", desc:"Classic snake reimagined with modern visuals and smooth controls.",                tags:["#javascript","#canvas","#game"], link:"https://vivekyadav011432.github.io/Snake-Game/"},
+  {title:"Portfolio v1",     emoji:"💼", desc:"My first portfolio — the origin story showcasing early skills.",                  tags:["#html","#css","#javascript"],    link:"https://vivekyadav011432.github.io/Portfolio/"},
+];
+
+const TECH = [
+  {label:"HTML5",color:"#e34f26",bg:"#2a1208"},{label:"CSS3",color:"#2965f1",bg:"#080f2a"},
+  {label:"JavaScript",color:"#f7df1e",bg:"#2a2500"},{label:"TypeScript",color:"#3178c6",bg:"#091826"},
+  {label:"React",color:"#61dafb",bg:"#082028"},{label:"Next.js",color:"#ffffff",bg:"#181818"},
+  {label:"Node.js",color:"#6cc24a",bg:"#0c1f0a"},{label:"Three.js",color:"#ffffff",bg:"#1a1a1a"},
+  {label:"MongoDB",color:"#47a248",bg:"#0a1f0a"},{label:"Figma",color:"#f24e1e",bg:"#2a0f08"},
+  {label:"AWS",color:"#ff9900",bg:"#2a1c00"},{label:"Docker",color:"#2496ed",bg:"#081626"},
+  {label:"Premiere",color:"#ea77ff",bg:"#1a0a24"},{label:"After FX",color:"#9999ff",bg:"#0d0d2a"},
+];
+
+const VIDEO_WORK = [
+  {emoji:"🎬",title:"Cinematic Reel 2024",  desc:"2-min showreel with colour-graded travel footage, smooth transitions and custom motion titles.", tags:["#premiere","#colorgrade","#reel"]},
+  {emoji:"📱",title:"Product Ad — Tech",    desc:"30-sec product ad with 3D motion graphics, particle overlays and pro sound design.",            tags:["#aftereffects","#motion","#3d"]},
+  {emoji:"🎵",title:"Music Video Edit",     desc:"Sync-cut music video with beat-matched transitions, glitch effects and VFX overlays.",           tags:["#premiere","#vfx","#sync"]},
+];
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MINI FLOAT-3D  (hero HUD)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function MiniFloat3D() {
+  const ref = useRef();
+  useEffect(()=>{
+    const el=ref.current; if(!el) return;
+    const W=el.clientWidth, H=el.clientHeight;
+    const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+    renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(W,H); el.appendChild(renderer.domElement);
+    const scene=new THREE.Scene(), camera=new THREE.PerspectiveCamera(60,W/H,0.1,100);
+    camera.position.set(0,0,3.2);
+    scene.add(new THREE.AmbientLight(0xffffff,0.3));
+    const d1=new THREE.DirectionalLight(0x7b2fff,5); d1.position.set(2,3,2); scene.add(d1);
+    const d2=new THREE.DirectionalLight(0x00c3ff,4); d2.position.set(-2,-1,2); scene.add(d2);
+    const d3=new THREE.PointLight(0xff00cc,3,10); d3.position.set(0,2,1); scene.add(d3);
+    const core=new THREE.Mesh(new THREE.IcosahedronGeometry(0.85,1),new THREE.MeshStandardMaterial({color:0x7b2fff,metalness:0.8,roughness:0.15,emissive:0x220066,emissiveIntensity:0.5})); scene.add(core);
+    scene.add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.91,1),new THREE.MeshBasicMaterial({color:0x00c3ff,wireframe:true,transparent:true,opacity:0.2})));
+    scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.1,16,16),new THREE.MeshBasicMaterial({color:0x7b2fff,transparent:true,opacity:0.04,side:THREE.BackSide,blending:THREE.AdditiveBlending})));
+    const rg=new THREE.Group();
+    [[0x7b2fff,1.35,0],[0x00c3ff,1.48,1.1],[0xff00cc,1.58,2.0]].forEach(([col,r,rx])=>{
+      const ring=new THREE.Mesh(new THREE.TorusGeometry(r,0.014,8,80),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.5,blending:THREE.AdditiveBlending}));
+      ring.rotation.x=rx; rg.add(ring);
+    }); scene.add(rg);
+    const pts=new Float32Array(200*3);
+    for(let i=0;i<200;i++){const a=Math.random()*Math.PI*2,r=1.6+Math.random()*0.4;pts[i*3]=Math.cos(a)*r;pts[i*3+1]=(Math.random()-0.5)*1.6;pts[i*3+2]=Math.sin(a)*r;}
+    const pGeo=new THREE.BufferGeometry(); pGeo.setAttribute("position",new THREE.BufferAttribute(pts,3));
+    scene.add(new THREE.Points(pGeo,new THREE.PointsMaterial({size:0.03,color:0x00c3ff,transparent:true,opacity:0.6,blending:THREE.AdditiveBlending})));
+    let raf,t=0;
+    const animate=()=>{raf=requestAnimationFrame(animate);t+=0.012;core.rotation.x+=0.009;core.rotation.y+=0.013;rg.rotation.y+=0.007;rg.rotation.x+=0.003;core.position.y=Math.sin(t)*0.07;d3.intensity=2.5+Math.sin(t*2)*1.2;renderer.render(scene,camera);};
+    animate();
+    return()=>{cancelAnimationFrame(raf);renderer.dispose();if(el.contains(renderer.domElement))el.removeChild(renderer.domElement);};
+  },[]);
+  return <div ref={ref} style={{width:"100%",height:"100%"}}/>;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   HEX BADGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function Hex({label,color,bg}){
+  const [h,setH]=useState(false);
+  return(
+    <div onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)}
+      style={{width:78,height:90,clipPath:"polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)",background:h?`linear-gradient(135deg,${color}33,${bg})`:bg,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"all .3s",transform:h?"scale(1.12) translateY(-4px)":"scale(1)",boxShadow:h?`0 0 20px ${color}44`:"none"}}>
+      <span style={{fontSize:9,fontWeight:700,color,textAlign:"center",letterSpacing:"0.04em",lineHeight:1.2,padding:"0 4px"}}>{label}</span>
+    </div>
+  );
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MAIN COMPONENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function SpacePortfolio(){
+  const mountRef   = useRef(null);
+  const sceneRef   = useRef({});
+  const [iPhase,   setIPhase]   = useState(0);
+  const [introDone,setIntroDone]= useState(false);
+  const [activeSection,setActiveSection] = useState(0);
+  const [hoveredPlanet,setHoveredPlanet] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen,setSearchOpen]=useState(false);
+  const [showPh,setShowPh]=useState(false);
+  const searchRef=useRef();
+
+  /* Intro timers */
+  useEffect(()=>{
+    const T=[];
+    T.push(setTimeout(()=>setIPhase(1),350));
+    T.push(setTimeout(()=>setIPhase(2),1700));
+    T.push(setTimeout(()=>setIPhase(3),2550));
+    T.push(setTimeout(()=>setIPhase(4),3900));
+    T.push(setTimeout(()=>setIPhase(5),4650));
+    T.push(setTimeout(()=>setIPhase(6),5500));
+    T.push(setTimeout(()=>{setIPhase(7);setIntroDone(true);},6700));
+    return()=>T.forEach(clearTimeout);
+  },[]);
+
+  /* Search */
+  useEffect(()=>{
+    if(searchOpen){setTimeout(()=>searchRef.current?.focus(),420);setTimeout(()=>setShowPh(true),360);}
+    else{setShowPh(false);if(searchRef.current)searchRef.current.value="";}
+  },[searchOpen]);
+
+  /* Navigate helper */
+  const navTo=useCallback((idx)=>{
+    if(sceneRef.current) sceneRef.current.targetZ=-idx*12;
+    setActiveSection(idx); setMenuOpen(false);
+  },[]);
+
+  /* ━━━━ THREE.JS SCENE ━━━━ */
+  useEffect(()=>{
+    const el=mountRef.current; if(!el) return;
+    const W=window.innerWidth, H=window.innerHeight;
+    const s=sceneRef.current;
+
+    const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
+    renderer.setSize(W,H); renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+    renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+    renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.25;
+    el.appendChild(renderer.domElement);
+
+    const scene=new THREE.Scene();
+    scene.background=new THREE.Color(0x000008);
+    scene.fog=new THREE.FogExp2(0x000010,0.016);
+    const camera=new THREE.PerspectiveCamera(75,W/H,0.1,1000);
+    camera.position.set(0,0,8);
+
+    /* Stars */
+    const starCount=8000, starPos=new Float32Array(starCount*3), starCol=new Float32Array(starCount*3);
+    for(let i=0;i<starCount;i++){
+      starPos[i*3]=(Math.random()-0.5)*400; starPos[i*3+1]=(Math.random()-0.5)*400; starPos[i*3+2]=(Math.random()-0.5)*400;
+      const c=new THREE.Color().setHSL(Math.random()*0.15+0.55,0.8,Math.random()*0.4+0.6);
+      starCol[i*3]=c.r; starCol[i*3+1]=c.g; starCol[i*3+2]=c.b;
+    }
+    const starGeo=new THREE.BufferGeometry();
+    starGeo.setAttribute("position",new THREE.BufferAttribute(starPos,3));
+    starGeo.setAttribute("color",new THREE.BufferAttribute(starCol,3));
+    const starMat=new THREE.PointsMaterial({size:0.18,vertexColors:true,transparent:true,opacity:0.9});
+    scene.add(new THREE.Points(starGeo,starMat));
+
+    /* Nebula */
+    const nebGroup=new THREE.Group();
+    [0x4400ff,0x0066ff,0xff0066,0x00ffcc,0x8800ff].forEach((col,n)=>{
+      const geo=new THREE.BufferGeometry(), pos=new Float32Array(600*3);
+      for(let i=0;i<600;i++){const th=Math.random()*Math.PI*2,ph=Math.random()*Math.PI,r=15+Math.random()*25;pos[i*3]=Math.sin(ph)*Math.cos(th)*r+(Math.random()-0.5)*20;pos[i*3+1]=Math.cos(ph)*r*0.5+(Math.random()-0.5)*15;pos[i*3+2]=Math.sin(ph)*Math.sin(th)*r-n*36;}
+      geo.setAttribute("position",new THREE.BufferAttribute(pos,3));
+      nebGroup.add(new THREE.Points(geo,new THREE.PointsMaterial({size:1.2,color:col,transparent:true,opacity:0.06,blending:THREE.AdditiveBlending,depthWrite:false})));
+    }); scene.add(nebGroup);
+
+    /* Naruto sphere (HOME) */
+    const sealTex=buildSealTexture();
+    const naruBall=new THREE.Mesh(new THREE.SphereGeometry(2.0,64,64),new THREE.MeshStandardMaterial({map:sealTex,emissiveMap:sealTex,emissive:new THREE.Color(0.5,0.12,0),emissiveIntensity:0.7,metalness:0.35,roughness:0.55}));
+    const naruGlow=new THREE.Mesh(new THREE.SphereGeometry(2.28,32,32),new THREE.MeshBasicMaterial({color:0xff4400,transparent:true,opacity:0.07,side:THREE.BackSide,blending:THREE.AdditiveBlending,depthWrite:false}));
+    const eGeo=new THREE.BufferGeometry(), ePos=new Float32Array(900*3);
+    for(let i=0;i<900;i++){const a=Math.random()*Math.PI*2,r=2.45+Math.random()*0.9;ePos[i*3]=Math.cos(a)*r;ePos[i*3+1]=(Math.random()-0.5)*0.7;ePos[i*3+2]=Math.sin(a)*r;}
+    eGeo.setAttribute("position",new THREE.BufferAttribute(ePos,3));
+    const eParts=new THREE.Points(eGeo,new THREE.PointsMaterial({size:0.055,color:0xff7700,transparent:true,opacity:0.72,blending:THREE.AdditiveBlending}));
+    const tailOrbs=[];
+    for(let i=0;i<9;i++){const orb=new THREE.Mesh(new THREE.SphereGeometry(0.09,12,12),new THREE.MeshBasicMaterial({color:0xff8800,transparent:true,opacity:0.85,blending:THREE.AdditiveBlending}));orb.userData.baseAngle=(i/9)*Math.PI*2;orb.userData.speed=0.008+Math.random()*0.005;orb.userData.yAmp=0.3+Math.random()*0.35;orb.userData.yFreq=0.6+Math.random()*0.5;tailOrbs.push(orb);}
+    const naruGroup=new THREE.Group(); naruGroup.add(naruBall,naruGlow,eParts,...tailOrbs); naruGroup.position.set(0,0,0); scene.add(naruGroup);
+    const naruLight=new THREE.PointLight(0xff5500,5,14); scene.add(naruLight);
+    s.naruGroup=naruGroup; s.naruBall=naruBall; s.eParts=eParts; s.tailOrbs=tailOrbs; s.naruLight=naruLight;
+
+    /* Helper: glow sphere */
+    const makeGlow=(radius,color,emissive,pos,rings=false)=>{
+      const g=new THREE.Group();
+      const mesh=new THREE.Mesh(new THREE.SphereGeometry(radius,48,48),new THREE.MeshStandardMaterial({color,emissive,emissiveIntensity:0.4,metalness:0.3,roughness:0.6})); mesh.castShadow=true; g.add(mesh);
+      g.add(new THREE.Mesh(new THREE.SphereGeometry(radius*1.18,24,24),new THREE.MeshBasicMaterial({color,transparent:true,opacity:0.08,side:THREE.BackSide,blending:THREE.AdditiveBlending,depthWrite:false})));
+      if(rings){const r=new THREE.Mesh(new THREE.RingGeometry(radius*1.6,radius*2.4,64),new THREE.MeshBasicMaterial({color,side:THREE.DoubleSide,transparent:true,opacity:0.25,blending:THREE.AdditiveBlending,depthWrite:false}));r.rotation.x=Math.PI*0.35;g.add(r);}
+      g.position.set(...pos); return{group:g,mesh};
+    };
+
+    /* Planets — 5 extra sections: ABOUT, WORK, SKILLS, VIDEO, CONTACT */
+    const aboutP  = makeGlow(1.2,0x00ccaa,0x009977,[-8,  2,-12]);
+    const workP   = makeGlow(1.5,0xff6600,0xcc4400,[ 6, -1,-24],true);
+    const skillsP = makeGlow(1.1,0x9900ff,0x6600cc,[-5,  3,-36]);
+    const videoP  = makeGlow(1.3,0xff69b4,0xcc1177,[ 7,  0,-48],true); // pink video planet
+    [aboutP,workP,skillsP,videoP].forEach(p=>scene.add(p.group));
+
+    /* Contact chakra portal — moved to z=-60 */
+    const contactGroup=new THREE.Group(); contactGroup.position.set(3,-2,-60);
+    const ringDefs=[
+      {r1:2.55,r2:0.052,col:0x00c3ff,spd:[0,0,0.010]},
+      {r1:2.55,r2:0.052,col:0x7b2fff,spd:[0.012,0,0]},
+      {r1:2.55,r2:0.038,col:0x00ffaa,spd:[0.007,0.005,0]},
+      {r1:1.80,r2:0.068,col:0xff0066,spd:[0,0.009,0.004]},
+      {r1:1.15,r2:0.050,col:0xffcc00,spd:[0.013,0,0.007]},
+      {r1:0.70,r2:0.040,col:0x00c3ff,spd:[0,0.016,0]},
+    ];
+    const cRings=ringDefs.map(({r1,r2,col,spd},idx)=>{
+      const m=new THREE.Mesh(new THREE.TorusGeometry(r1,r2,16,100),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.78,blending:THREE.AdditiveBlending,depthWrite:false}));
+      m.rotation.x=idx*0.52; m.rotation.y=idx*0.31; m.userData.spd=spd; contactGroup.add(m); return m;
+    });
+    const vortexCore=new THREE.Mesh(new THREE.SphereGeometry(0.5,32,32),new THREE.MeshBasicMaterial({color:0x00c3ff,transparent:true,opacity:0.92,blending:THREE.AdditiveBlending}));
+    contactGroup.add(vortexCore);
+    [0.9,1.4,1.9].forEach((r,i)=>{contactGroup.add(new THREE.Mesh(new THREE.SphereGeometry(r,16,16),new THREE.MeshBasicMaterial({color:[0x00c3ff,0x7b2fff,0x00c3ff][i],transparent:true,opacity:0.06-i*0.015,side:THREE.BackSide,blending:THREE.AdditiveBlending,depthWrite:false})));});
+    const spGeo=new THREE.BufferGeometry(), spPos=new Float32Array(1400*3);
+    for(let i=0;i<1400;i++){const t=Math.random()*Math.PI*2,r=0.2+Math.random()*2.6;spPos[i*3]=Math.cos(t)*r;spPos[i*3+1]=(Math.random()-0.5)*5.2;spPos[i*3+2]=Math.sin(t)*r;}
+    spGeo.setAttribute("position",new THREE.BufferAttribute(spPos,3));
+    contactGroup.add(new THREE.Points(spGeo,new THREE.PointsMaterial({size:0.048,color:0x00c3ff,transparent:true,opacity:0.55,blending:THREE.AdditiveBlending})));
+    scene.add(contactGroup);
+    const contactLight=new THREE.PointLight(0x00c3ff,3.5,16); contactLight.position.set(3,-2,-60); scene.add(contactLight);
+    s.contactGroup=contactGroup; s.cRings=cRings; s.vortexCore=vortexCore; s.contactLight=contactLight;
+
+    /* Planets raycaster array — 6 sections */
+    const planets=[
+      {mesh:naruBall,   group:naruGroup,      section:0,name:"HOME",    z:0},
+      {mesh:aboutP.mesh,group:aboutP.group,   section:1,name:"ABOUT",   z:-12},
+      {mesh:workP.mesh, group:workP.group,    section:2,name:"WORK",    z:-24},
+      {mesh:skillsP.mesh,group:skillsP.group, section:3,name:"SKILLS",  z:-36},
+      {mesh:videoP.mesh,group:videoP.group,   section:4,name:"VIDEO",   z:-48},
+      {mesh:vortexCore, group:contactGroup,   section:5,name:"CONTACT", z:-60},
+    ];
+    s.planets=planets;
+
+    /* Asteroids */
+    const asteroidGroup=new THREE.Group();
+    for(let i=0;i<200;i++){const m=new THREE.Mesh(new THREE.DodecahedronGeometry(Math.random()*0.12+0.04,0),new THREE.MeshStandardMaterial({color:0x888899,roughness:0.9,metalness:0.1}));const a=Math.random()*Math.PI*2,r=4+Math.random()*3;m.position.set(Math.cos(a)*r,(Math.random()-0.5)*0.8,Math.sin(a)*r-18);m.rotation.set(Math.random()*6,Math.random()*6,Math.random()*6);asteroidGroup.add(m);}
+    scene.add(asteroidGroup);
+
+    /* Float shapes */
+    const floatGroup=new THREE.Group();
+    const fGeos=[new THREE.OctahedronGeometry(0.3),new THREE.TetrahedronGeometry(0.25),new THREE.IcosahedronGeometry(0.2),new THREE.BoxGeometry(0.3,0.3,0.3)];
+    const fCols=[0x00ffff,0xff00ff,0x7b2fff,0x00ff88];
+    for(let i=0;i<40;i++){const m=new THREE.Mesh(fGeos[i%4],new THREE.MeshBasicMaterial({color:fCols[i%4],wireframe:true,transparent:true,opacity:0.4}));m.position.set((Math.random()-0.5)*30,(Math.random()-0.5)*15,(Math.random()-0.5)*72-20);m.userData.rotSpeed={x:(Math.random()-0.5)*0.015,y:(Math.random()-0.5)*0.02};floatGroup.add(m);}
+    scene.add(floatGroup);
+
+    /* Lights */
+    scene.add(new THREE.AmbientLight(0x111133,0.8));
+    const sun=new THREE.PointLight(0x4466ff,3,50); sun.position.set(5,8,5); scene.add(sun);
+    const sun2=new THREE.PointLight(0xff3366,1.5,60); sun2.position.set(-8,-4,-20); scene.add(sun2);
+
+    /* Warp lines */
+    const warpLines=[];
+    for(let i=0;i<60;i++){const geo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0),new THREE.Vector3(0,0,-3)]);const mat=new THREE.LineBasicMaterial({color:Math.random()>0.5?0x4466ff:0x00ccff,transparent:true,opacity:0,blending:THREE.AdditiveBlending});const line=new THREE.Line(geo,mat);const a=Math.random()*Math.PI*2,r=Math.random()*4+1;line.position.set(Math.cos(a)*r,Math.sin(a)*r*0.5,camera.position.z-5);warpLines.push(line);scene.add(line);}
+    s.warpLines=warpLines;
+
+    /* State */
+    let targetZ=0, currentZ=0, scrollVel=0, isWarping=false, warpTimer=0;
+    let tmx=0, tmy=0, mx=0, my=0, time=0;
+    s.targetZ=targetZ;
+    const raycaster=new THREE.Raycaster(), mouse2d=new THREE.Vector2();
+
+    const onWheel=(e)=>{e.preventDefault();scrollVel+=e.deltaY*0.008;scrollVel=Math.max(-3,Math.min(3,scrollVel));if(Math.abs(scrollVel)>0.5){isWarping=true;warpTimer=0;}};
+    const onMouseMove=(e)=>{tmx=(e.clientX/W-0.5)*2;tmy=(e.clientY/H-0.5)*2;mouse2d.x=(e.clientX/W)*2-1;mouse2d.y=-(e.clientY/H)*2+1;};
+    const onTouch=(e)=>{if(e.touches.length){const t=e.touches[0];tmx=(t.clientX/W-0.5)*2;tmy=(t.clientY/H-0.5)*2;}};
+    const onClick=()=>{raycaster.setFromCamera(mouse2d,camera);const hits=raycaster.intersectObjects(planets.map(p=>p.mesh));if(hits.length){const idx=planets.findIndex(p=>p.mesh===hits[0].object);if(idx>=0){s.targetZ=-planets[idx].z;setActiveSection(planets[idx].section);isWarping=true;warpTimer=0;}}};
+    window.addEventListener("wheel",onWheel,{passive:false});
+    window.addEventListener("mousemove",onMouseMove);
+    window.addEventListener("touchmove",onTouch,{passive:true});
+    window.addEventListener("click",onClick);
+
+    /* Animation */
+    let animId;
+    const animate=()=>{
+      animId=requestAnimationFrame(animate); time+=0.01;
+      scrollVel*=0.88; s.targetZ=(s.targetZ||0)+scrollVel;
+      s.targetZ=Math.max(-64,Math.min(2,s.targetZ));
+      currentZ+=(s.targetZ-currentZ)*0.06;
+      camera.position.z=currentZ+8;
+      const progress=-currentZ/60;
+      setActiveSection(Math.max(0,Math.min(5,Math.round(progress*5))));
+      mx+=(tmx-mx)*0.04; my+=(tmy-my)*0.04;
+      camera.position.x=mx*1.5; camera.position.y=-my*1.0;
+      camera.lookAt(mx*0.3,-my*0.2,camera.position.z-5);
+      if(s.naruGroup){s.naruGroup.rotation.y+=(mx*1.6-s.naruGroup.rotation.y)*0.045;s.naruGroup.rotation.x+=(-my*0.85-s.naruGroup.rotation.x)*0.045;s.naruBall.rotation.z+=0.0035;}
+      if(s.tailOrbs){s.tailOrbs.forEach((orb,i)=>{orb.userData.baseAngle+=orb.userData.speed;const a=orb.userData.baseAngle,r=2.85+Math.sin(time*0.6+i)*0.18;orb.position.set(Math.cos(a)*r,Math.sin(time*orb.userData.yFreq+i*0.7)*orb.userData.yAmp,Math.sin(a)*r);});}
+      if(s.eParts)s.eParts.rotation.y+=0.006;
+      if(s.naruLight)s.naruLight.intensity=4.5+Math.sin(time*3)*1.6;
+      if(s.cRings)s.cRings.forEach(ring=>{ring.rotation.x+=ring.userData.spd[0];ring.rotation.y+=ring.userData.spd[1];ring.rotation.z+=ring.userData.spd[2];});
+      if(s.contactGroup){s.contactGroup.rotation.y+=(mx*1.0-s.contactGroup.rotation.y)*0.045;s.contactGroup.rotation.x+=(-my*0.5-s.contactGroup.rotation.x)*0.045;}
+      if(s.contactLight)s.contactLight.intensity=3.5+Math.sin(time*2.2)*0.9;
+      planets.forEach((p,i)=>{p.mesh.rotation.y+=0.004+i*0.001;p.group.position.y+=Math.sin(time+i*1.3)*0.003;});
+      floatGroup.children.forEach(m=>{m.rotation.x+=m.userData.rotSpeed.x;m.rotation.y+=m.userData.rotSpeed.y;});
+      asteroidGroup.rotation.y+=0.0008; nebGroup.rotation.y+=0.0002;
+      starMat.opacity=0.7+Math.sin(time*2)*0.1;
+      if(isWarping){warpTimer+=0.05;warpLines.forEach((line,i)=>{line.material.opacity=Math.sin(warpTimer*3+i*0.2)*0.5*Math.abs(scrollVel)*0.4;line.position.z=camera.position.z-5-Math.random()*20;});if(warpTimer>1.5&&Math.abs(scrollVel)<0.1){isWarping=false;warpLines.forEach(l=>{l.material.opacity=0;});}}
+      raycaster.setFromCamera(mouse2d,camera);
+      const hits2=raycaster.intersectObjects(planets.map(p=>p.mesh));
+      if(hits2.length){setHoveredPlanet(planets.findIndex(p=>p.mesh===hits2[0].object));document.body.style.cursor="pointer";}
+      else{setHoveredPlanet(null);document.body.style.cursor="default";}
+      renderer.render(scene,camera);
+    };
+    animate();
+
+    const onResize=()=>{const w=window.innerWidth,h=window.innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h);};
+    window.addEventListener("resize",onResize);
+    return()=>{window.removeEventListener("wheel",onWheel);window.removeEventListener("mousemove",onMouseMove);window.removeEventListener("touchmove",onTouch);window.removeEventListener("click",onClick);window.removeEventListener("resize",onResize);cancelAnimationFrame(animId);renderer.dispose();if(el.contains(renderer.domElement))el.removeChild(renderer.domElement);document.body.style.cursor="default";};
+  },[]);
+
+  /* ━━━━ RENDER ━━━━ */
+  return(
+    <div style={{width:"100vw",height:"100vh",overflow:"hidden",fontFamily:"'Sora',sans-serif",background:"#000008"}}>
+<style>{`
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap');
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+  /* ── INTRO ── */
+  .io{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;pointer-events:all;}
+  .ib2{position:absolute;inset:0;transition:opacity 1.4s ease;}
+  .ig2{position:absolute;top:50%;left:50%;width:560px;height:200px;background:radial-gradient(ellipse,rgba(255,80,0,0.13) 0%,transparent 70%);transform:translate(-50%,-50%);pointer-events:none;border-radius:50%;}
+  .it2{position:fixed;font-family:'Sora',sans-serif;font-weight:800;font-size:72px;letter-spacing:-.04em;white-space:nowrap;display:flex;align-items:center;gap:18px;z-index:310;transform-origin:left top;}
+  .it2.fly{transition:top .95s cubic-bezier(.77,0,.18,1),left .95s cubic-bezier(.77,0,.18,1),transform .95s cubic-bezier(.77,0,.18,1);}
+  .tv2{background:linear-gradient(135deg,#fff 20%,#c4a8ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:inline-block;transition:opacity .9s cubic-bezier(.34,1.4,.64,1),transform .9s cubic-bezier(.34,1.4,.64,1),filter .9s ease;}
+  .td2{display:inline-block;color:#7b2fff;-webkit-text-fill-color:#7b2fff;filter:drop-shadow(0 0 12px rgba(123,47,255,.9));font-size:.62em;min-width:64px;text-align:center;transition:opacity .55s cubic-bezier(.34,1.4,.64,1) .08s,transform .55s cubic-bezier(.34,1.4,.64,1) .08s;}
+  .td2.mph{animation:dmp .45s cubic-bezier(.4,0,.2,1) forwards;}
+  @keyframes dmp{0%{transform:scale(1) rotate(0deg);opacity:1}40%{transform:scale(1.3) rotate(15deg);opacity:.6}100%{transform:scale(1) rotate(0deg);opacity:1}}
+  .tdev2{background:linear-gradient(135deg,#7b2fff,#00c3ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:inline-block;transition:opacity .7s cubic-bezier(.34,1.4,.64,1) .12s,transform .7s cubic-bezier(.34,1.4,.64,1) .12s,filter .5s ease;}
+  .iball2{position:fixed;top:50%;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#a855f7,#00c3ff,#7b2fff);box-shadow:0 0 22px rgba(0,195,255,.8),0 0 44px rgba(123,47,255,.5),inset 0 0 10px rgba(255,255,255,.3);z-index:320;pointer-events:none;animation:bb2 1.35s cubic-bezier(.4,0,.4,1) forwards;}
+  @keyframes bb2{0%{right:-40px;transform:translateY(-50%) scale(1);opacity:1}9%{right:8vw;transform:translateY(calc(-50% - 52px)) scale(.95)}18%{right:18vw;transform:translateY(-50%) scale(1.05)}28%{right:29vw;transform:translateY(calc(-50% - 66px)) scale(.9)}38%{right:38vw;transform:translateY(-50%) scale(1.08)}48%{right:44vw;transform:translateY(calc(-50% - 42px)) scale(.93)}57%{right:48vw;transform:translateY(-50%) scale(1.05)}66%{right:50vw;transform:translateY(calc(-50% - 25px)) scale(.96)}74%{right:51vw;transform:translateY(-50%) scale(1.02)}82%{right:51.5vw;transform:translateY(calc(-50% - 12px)) scale(.98)}88%{right:51.8vw;transform:translateY(-50%) scale(1);opacity:1}94%{right:51.8vw;transform:translateY(-50%) scale(1.8);opacity:.6}100%{right:51.8vw;transform:translateY(-50%) scale(.05);opacity:0}}
+
+  /* ── NAVBAR ── */
+  .navbar{position:fixed;top:0;left:0;right:0;z-index:100;height:68px;display:flex;align-items:center;padding:0 20px;background:linear-gradient(to bottom,rgba(0,0,8,.92),transparent);animation:fid2 .7s cubic-bezier(.4,0,.2,1) both;gap:10px;}
+  @keyframes fid2{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)}}
+  .nav-logo{display:flex;align-items:center;gap:6px;font-size:20px;font-weight:800;letter-spacing:-.03em;cursor:pointer;user-select:none;flex-shrink:0;}
+  .nav-logo .name{background:linear-gradient(135deg,#fff 30%,#c4a8ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .nav-logo .sep{color:rgba(123,47,255,.6);font-weight:300;font-size:.9em;-webkit-text-fill-color:rgba(123,47,255,.6);}
+  .nav-logo .role{background:linear-gradient(135deg,#7b2fff,#00c3ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:.9em;}
+  .nav-links{display:flex;gap:2px;margin-left:auto;}
+  .nav-link{padding:6px 11px;font-size:11.5px;font-weight:500;color:rgba(180,180,255,.5);background:none;border:none;cursor:pointer;border-radius:8px;font-family:'Sora',sans-serif;transition:color .2s,background .2s;letter-spacing:.04em;white-space:nowrap;}
+  .nav-link:hover,.nav-link.active{color:#fff;background:rgba(123,47,255,.15);}
+
+  /* ── SEARCH ── */
+  .sw2{display:flex;align-items:center;flex-shrink:0;}
+  .itrack2{height:38px;width:0;overflow:hidden;border-radius:999px 0 0 999px;background:rgba(0,0,16,.92);border:1.5px solid rgba(99,0,255,.4);border-right:none;transition:width .5s cubic-bezier(.4,0,.2,1);position:relative;display:flex;align-items:center;}
+  .itrack2.open{width:180px;box-shadow:0 0 22px rgba(123,47,255,.3);}
+  .sinput2{width:180px;height:38px;background:transparent;border:none;outline:none;color:#e0f0ff;font-size:12.5px;font-family:'Sora',sans-serif;padding:0 10px 0 16px;caret-color:#7b2fff;flex-shrink:0;}
+  .phtext2{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:rgba(140,180,255,.45);font-size:12.5px;font-family:'Sora',sans-serif;pointer-events:none;white-space:nowrap;opacity:0;}
+  .phtext2.bnc{animation:bIn2 .55s cubic-bezier(.34,1.56,.64,1) both;opacity:1;}
+  @keyframes bIn2{0%{opacity:0;transform:translateY(calc(-50% + 14px)) scale(.8)}60%{opacity:1;transform:translateY(calc(-50% - 5px)) scale(1.05)}80%{transform:translateY(calc(-50% + 1px)) scale(.98)}100%{opacity:1;transform:translateY(-50%) scale(1)}}
+  .ibox2{width:38px;height:38px;flex-shrink:0;background:linear-gradient(135deg,#fff 0%,#e8d8ff 100%);border:none;outline:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:9px;box-shadow:0 0 14px rgba(123,47,255,.6);transition:border-radius .48s cubic-bezier(.4,0,.2,1),box-shadow .3s,transform .2s;position:relative;z-index:2;animation:ip2 3s ease-in-out infinite;}
+  @keyframes ip2{0%,100%{box-shadow:0 0 14px rgba(123,47,255,.6)}50%{box-shadow:0 0 24px rgba(0,195,255,.7)}}
+  .ibox2.open{border-radius:50%;animation:none;}
+  .ibox2:hover{transform:scale(1.08) rotate(8deg);}
+  .cbtn2{width:0;height:38px;overflow:hidden;background:none;border:none;outline:none;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;opacity:0;flex-shrink:0;transition:width .35s cubic-bezier(.4,0,.2,1) .1s,opacity .22s ease .26s;}
+  .cbtn2.open{width:30px;opacity:1;}
+  .xsvg2{display:flex;transform:rotate(-90deg) scale(.3);transition:transform .5s cubic-bezier(.34,1.56,.64,1) .2s;}
+  .cbtn2.open .xsvg2{transform:rotate(0deg) scale(1);}
+  .cbtn2:hover .xsvg2{transform:rotate(90deg) scale(1.1)!important;transition:transform .18s ease!important;}
+
+  /* ── HAMBURGER ── */
+  .hbg2{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;background:none;border:none;z-index:200;flex-shrink:0;}
+  .hbg2 span{display:block;width:22px;height:2px;background:#fff;border-radius:2px;transition:all .3s;}
+  .mmenu2{display:none;position:fixed;top:68px;left:0;right:0;background:rgba(0,0,12,.97);backdrop-filter:blur(20px);border-bottom:1px solid rgba(123,47,255,.2);padding:14px 20px;z-index:99;flex-direction:column;gap:2px;}
+  .mmenu2.open{display:flex;}
+  .mnb2{color:rgba(200,200,255,.65);font-size:14px;font-weight:500;background:none;border:none;cursor:pointer;padding:12px 0;font-family:'Sora',sans-serif;text-align:left;border-bottom:1px solid rgba(123,47,255,.08);transition:color .2s;width:100%;letter-spacing:.04em;}
+  .mnb2:last-child{border-bottom:none;}
+  .mnb2:hover,.mnb2.act{color:#fff;}
+
+  /* ── HUD ── */
+  .hud{position:fixed;left:36px;top:50%;transform:translateY(-50%);z-index:50;max-width:520px;width:calc(100vw - 72px);animation:fil2 .7s cubic-bezier(.4,0,.2,1) .1s both;}
+  @keyframes fil2{from{opacity:0;transform:translateY(-50%) translateX(-24px)}to{opacity:1;transform:translateY(-50%) translateX(0)}}
+  .hud-tag{font-size:10.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#00c3ff;border-left:2px solid #00c3ff;padding-left:10px;margin-bottom:14px;opacity:.7;}
+  .hud-title{font-size:clamp(28px,4.5vw,68px);font-weight:800;line-height:1.0;letter-spacing:-.03em;color:#fff;margin-bottom:10px;}
+  .hud-title .grad{background:linear-gradient(90deg,#7b2fff,#00c3ff,#ff00cc,#7b2fff);background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gsh2 4s linear infinite;}
+  @keyframes gsh2{to{background-position:300% center}}
+  .hud-sub{font-size:13px;font-weight:600;color:rgba(160,160,255,.6);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;}
+  .hud-desc{font-size:14px;color:rgba(180,180,255,.45);line-height:1.75;font-weight:300;max-width:360px;margin-bottom:22px;}
+  .hud-cta{display:inline-flex;align-items:center;gap:10px;padding:11px 26px;background:linear-gradient(135deg,#7b2fff,#00c3ff);border:none;border-radius:999px;color:#fff;font-size:13px;font-weight:600;font-family:'Sora',sans-serif;cursor:pointer;box-shadow:0 0 26px rgba(123,47,255,.45);transition:all .25s;position:relative;overflow:hidden;}
+  .hud-cta:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 0 40px rgba(0,195,255,.55);}
+  .ct2{animation:ctin2 .4s cubic-bezier(.4,0,.2,1) both;}
+  @keyframes ctin2{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ── SECTION DOTS (right) ── */
+  .snav{position:fixed;right:28px;top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;gap:14px;animation:fir2 .7s cubic-bezier(.4,0,.2,1) .2s both;}
+  @keyframes fir2{from{opacity:0;transform:translateY(-50%) translateX(20px)}to{opacity:1;transform:translateY(-50%) translateX(0)}}
+  .sdw{display:flex;align-items:center;gap:8px;cursor:pointer;}
+  .slbl2{font-size:9px;letter-spacing:.15em;font-weight:600;text-transform:uppercase;color:rgba(180,180,255,.3);text-align:right;opacity:0;transform:translateX(6px);transition:opacity .2s,transform .2s,color .2s;}
+  .sdw:hover .slbl2,.sdw.active .slbl2{opacity:1;transform:translateX(0);color:rgba(200,200,255,.8);}
+  .sdot{width:7px;height:7px;border-radius:50%;background:rgba(123,47,255,.3);border:1.5px solid rgba(123,47,255,.4);transition:all .3s;flex-shrink:0;}
+  .sdw.active .sdot,.sdw:hover .sdot{background:linear-gradient(135deg,#7b2fff,#00c3ff);border-color:#00c3ff;box-shadow:0 0 10px rgba(0,195,255,.6);transform:scale(1.4);}
+
+  /* ── BOTTOM HUD ── */
+  .bhud{position:fixed;bottom:24px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:10px;z-index:50;animation:fiu2 .7s cubic-bezier(.4,0,.2,1) .3s both;}
+  @keyframes fiu2{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .sht{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(160,160,255,.6);text-shadow:0 0 12px rgba(123,47,255,.7),0 0 24px rgba(0,195,255,.4);animation:shtpulse 2.5s ease-in-out infinite;}
+  @keyframes shtpulse{0%,100%{opacity:.6;text-shadow:0 0 10px rgba(123,47,255,.6),0 0 22px rgba(0,195,255,.3)}50%{opacity:1;text-shadow:0 0 18px rgba(123,47,255,.9),0 0 36px rgba(0,195,255,.6),0 0 54px rgba(123,47,255,.3)}}
+  .sw3{width:20px;height:32px;border:1.5px solid rgba(123,47,255,.7);border-radius:10px;display:flex;justify-content:center;padding-top:5px;box-shadow:0 0 10px rgba(123,47,255,.5),0 0 20px rgba(0,195,255,.25),inset 0 0 8px rgba(123,47,255,.1);animation:wheelpulse 2.5s ease-in-out infinite;}
+  @keyframes wheelpulse{0%,100%{border-color:rgba(123,47,255,.6);box-shadow:0 0 8px rgba(123,47,255,.4),0 0 16px rgba(0,195,255,.2)}50%{border-color:rgba(0,195,255,.9);box-shadow:0 0 14px rgba(123,47,255,.8),0 0 28px rgba(0,195,255,.5),0 0 42px rgba(123,47,255,.2)}}
+  .sdot2{width:3px;height:6px;background:linear-gradient(to bottom,#00c3ff,#7b2fff);border-radius:2px;box-shadow:0 0 6px rgba(0,195,255,.8);animation:sd2 1.8s ease-in-out infinite;}
+  @keyframes sd2{0%,100%{transform:translateY(0);opacity:1}70%{transform:translateY(8px);opacity:0}}
+
+  /* ── TOOLTIP ── */
+  .ptt{position:fixed;z-index:200;background:rgba(10,0,30,.85);backdrop-filter:blur(12px);border:1px solid rgba(123,47,255,.35);border-radius:10px;padding:7px 14px;font-size:11px;font-weight:600;color:#00c3ff;letter-spacing:.1em;text-transform:uppercase;pointer-events:none;top:20px;left:50%;transform:translateX(-50%);box-shadow:0 0 20px rgba(0,195,255,.2);animation:ptti .2s ease both;}
+  @keyframes ptti{from{opacity:0;transform:translateX(-50%) translateY(-4px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+  .coords2{position:fixed;bottom:24px;left:32px;z-index:50;font-size:10px;color:rgba(0,195,255,.3);letter-spacing:.1em;font-family:monospace;}
+
+  /* ── HUD CONTENT CARDS ── */
+  .proj-card{background:rgba(255,255,255,.04);border:1px solid rgba(123,47,255,.15);border-radius:12px;padding:12px 14px;transition:all .3s;cursor:pointer;text-decoration:none;display:block;color:inherit;}
+  .proj-card:hover{border-color:rgba(123,47,255,.5);background:rgba(123,47,255,.1);transform:translateY(-3px);}
+  .vid-card{background:rgba(255,100,200,.04);border:1px solid rgba(255,100,200,.15);border-radius:12px;padding:12px 14px;transition:all .3s;}
+  .vid-card:hover{border-color:rgba(255,100,200,.45);background:rgba(255,100,200,.08);transform:translateY(-3px);}
+  .stag{display:inline-block;padding:2px 8px;background:rgba(123,47,255,.15);border:1px solid rgba(123,47,255,.3);border-radius:999px;font-size:9px;color:#a78bfa;font-weight:600;}
+  .vtag{display:inline-block;padding:2px 8px;background:rgba(255,110,200,.12);border:1px solid rgba(255,110,200,.25);border-radius:999px;font-size:9px;color:rgba(255,200,240,.8);font-weight:600;}
+  .send-btn{display:inline-flex;align-items:center;gap:10px;padding:14px 34px;background:linear-gradient(135deg,#7b2fff,#00c3ff);border:none;border-radius:999px;color:#fff;font-size:14px;font-weight:700;font-family:'Sora',sans-serif;cursor:pointer;box-shadow:0 0 28px rgba(123,47,255,.45);transition:all .25s;text-decoration:none;}
+  .send-btn:hover{transform:translateY(-2px);box-shadow:0 6px 40px rgba(0,195,255,.55);}
+
+  /* ── MOBILE ── */
+  @media(max-width:900px){
+    .nav-links{display:none!important;}
+    .hbg2{display:flex!important;}
+    .snav{display:none!important;}
+    .sw2{display:none!important;}
+    .hud{left:18px;right:18px;max-width:100%;width:auto;}
+    .coords2{display:none;}
+  }
+  @media(max-width:480px){
+    .it2{font-size:46px!important;gap:10px!important;}
+    .hud-title{font-size:clamp(24px,7vw,44px)!important;}
+  }
+`}</style>
+
+      {/* ── 3D canvas ── */}
+      <div ref={mountRef} style={{position:"fixed",inset:0,zIndex:0}}/>
+
+      {/* ━━━━ INTRO OVERLAY (dark veil + glow — fades away) ━━━━ */}
+      {iPhase < 7 && (
+        <div className="io" style={{pointerEvents:"none"}}>
+          <div className="ib2" style={{background:"#000008",opacity:iPhase>=6?0:1}}/>
+          <div className="ig2" style={{opacity:iPhase>=1&&iPhase<6?1:0,transition:"opacity .6s ease"}}/>
+          {iPhase===3 && <div className="iball2"/>}
+        </div>
+      )}
+
+      {/* ━━━━ ANIMATED TITLE — always rendered, becomes permanent nav logo ━━━━ */}
+      <div
+        className={`it2${iPhase>=5?" fly":""}`}
+        style={{
+          top:  iPhase>=6 ? "23px" : "50%",
+          left: iPhase>=6 ? "16px" : "50%",
+          transform: iPhase>=6
+            ? "scale(0.28)"
+            : "translate(-50%,-50%) scale(1)",
+          transformOrigin: "left top",
+          zIndex: 310,
+          pointerEvents: introDone ? "auto" : "none",
+          cursor: introDone ? "pointer" : "default",
+        }}
+        onClick={()=>introDone && navTo(0)}
+      >
+        <span className="tv2" style={{opacity:iPhase>=1?1:0,transform:iPhase>=1?(iPhase>=2?"scale(1) translateX(-8px)":"scale(1) translateX(0)"):"scale(.02) translateX(0)",filter:iPhase>=1?"blur(0px)":"blur(20px)"}}>Vivek.</span>
+        <span className={`td2${iPhase===4?" mph":""}`} style={{opacity:iPhase>=2?1:0,transform:iPhase>=2?"translateX(0) scale(1)":"translateX(28px) scale(.2)"}}>{iPhase>=4?"|":"</>"}</span>
+        <span className="tdev2" style={{opacity:iPhase>=4?1:0,transform:iPhase>=4?"translateX(0) scale(1)":"translateX(-8px) scale(.85)",filter:iPhase>=4?"blur(0px)":"blur(6px)"}}>Developer</span>
+      </div>
+
+      {/* ━━━━ MAIN UI ━━━━ */}
+      {introDone && (
+        <>
+          {/* ── NAVBAR ── */}
+          <nav className="navbar">
+
+            {/* spacer for fixed "Vivek. | Developer" logo — 72px × scale(0.28) ≈ 192px */}
+            <div style={{width:192,flexShrink:0}}/>
+
+            {/* flexible gap */}
+            <div style={{flex:1}}/>
+
+            {/* nav links — always visible, flex-shrink:0 so search can't squeeze them */}
+            <div className="nav-links" style={{flexShrink:0}}>
+              {SECTIONS.map((s,i)=>(
+                <button key={s} className={`nav-link${activeSection===i?" active":""}`}
+                  onClick={()=>navTo(i)}>
+                  {s==="VIDEO"?"🎬 VIDEO":s}
+                </button>
+              ))}
+            </div>
+
+            {/* Search bar — FAR RIGHT, input expands leftward so nav links never move */}
+            <div className="sw2" style={{flexShrink:0,marginLeft:10}}>
+              {/* close btn (appears on left when open) */}
+              <button className={`cbtn2${searchOpen?" open":""}`} onClick={()=>setSearchOpen(false)} tabIndex={searchOpen?0:-1}>
+                <span className="xsvg2">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="url(#xg2)" strokeWidth="2.8" strokeLinecap="round"/>
+                    <defs><linearGradient id="xg2" x1="6" y1="6" x2="18" y2="18"><stop stopColor="#00c3ff"/><stop offset="1" stopColor="#7b2fff"/></linearGradient></defs>
+                  </svg>
+                </span>
+              </button>
+              {/* input expands leftward */}
+              <div className={`itrack2${searchOpen?" open":""}`} style={{borderRadius:"999px 0 0 999px",borderRight:"none"}}>
+                <input ref={searchRef} className="sinput2" type="text" placeholder=""
+                  onKeyDown={e=>e.key==="Escape"&&setSearchOpen(false)}/>
+                <span className={`phtext2${showPh?" bnc":""}`}>Search...</span>
+              </div>
+              {/* icon box always on far right */}
+              <button className={`ibox2${searchOpen?" open":""}`} onClick={()=>setSearchOpen(o=>!o)} aria-label="Search">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <circle cx="11" cy="11" r="7" stroke="url(#sg3)" strokeWidth="2.3"/>
+                  <path d="M16.5 16.5L21 21" stroke="url(#sg4)" strokeWidth="2.3" strokeLinecap="round"/>
+                  <defs>
+                    <linearGradient id="sg3" x1="4" y1="4" x2="18" y2="18"><stop stopColor="#7b2fff"/><stop offset="1" stopColor="#00c3ff"/></linearGradient>
+                    <linearGradient id="sg4" x1="16" y1="16" x2="21" y2="21"><stop stopColor="#00c3ff"/><stop offset="1" stopColor="#7b2fff"/></linearGradient>
+                  </defs>
+                </svg>
+              </button>
+            </div>
+
+            {/* Mobile hamburger */}
+            <button className="hbg2" onClick={()=>setMenuOpen(o=>!o)} aria-label="Menu">
+              <span style={{transform:menuOpen?"rotate(45deg) translate(5px,5px)":""}}/>
+              <span style={{opacity:menuOpen?0:1}}/>
+              <span style={{transform:menuOpen?"rotate(-45deg) translate(5px,-5px)":""}}/>
+            </button>
+          </nav>
+
+          {/* Mobile menu */}
+          <div className={`mmenu2${menuOpen?" open":""}`}>
+            {SECTIONS.map((s,i)=>(
+              <button key={s} className={`mnb2${activeSection===i?" act":""}`} onClick={()=>navTo(i)}>
+                {s==="VIDEO"?"🎬 VIDEO EDITING":s}
+              </button>
+            ))}
+          </div>
+
+          {/* ── HUD (left panel — content changes per section) ── */}
+          <div className="hud">
+            <div className="ct2" key={activeSection}>
+
+              {/* ── HOME ── */}
+              {activeSection===0 && <>
+                <div className="hud-tag">✦ 01 / 06 — HOME</div>
+                <h1 className="hud-title"><span className="grad">Vivek.</span></h1>
+                <div className="hud-sub">Full-Stack Developer &amp; 3D Artist</div>
+                <p className="hud-desc">Crafting immersive digital experiences from deep space. Scroll or click planets to explore.</p>
+                {/* 3D Icosahedron above code editor */}
+                <div style={{width:"min(320px,80vw)",marginBottom:0}}>
+                  <div style={{width:"100%",height:140,marginBottom:0}}>
+                    <MiniFloat3D/>
+                  </div>
+                  <div style={{background:"rgba(123,47,255,.08)",border:"1px solid rgba(123,47,255,.22)",borderRadius:12,padding:16,backdropFilter:"blur(10px)"}}>
+                    <div style={{display:"flex",gap:5,marginBottom:10}}>
+                      {["#ff5f57","#ffbd2e","#28c840"].map(c=><div key={c} style={{width:9,height:9,borderRadius:"50%",background:c}}/>)}
+                    </div>
+                    <div style={{fontFamily:"monospace",fontSize:10,lineHeight:1.8,color:"rgba(255,255,255,.7)"}}>
+                      <div><span style={{color:"#569cd6"}}>const</span> <span style={{color:"#9cdcfe"}}>portfolio</span> = {"{"}</div>
+                      <div style={{paddingLeft:14}}><span style={{color:"#9cdcfe"}}>name</span>: <span style={{color:"#ce9178"}}>"Vivek"</span>,</div>
+                      <div style={{paddingLeft:14}}><span style={{color:"#9cdcfe"}}>role</span>: <span style={{color:"#ce9178"}}>"Full Stack Dev"</span>,</div>
+                      <div style={{paddingLeft:14}}><span style={{color:"#9cdcfe"}}>skills</span>: <span style={{color:"#4fc1ff"}}>["React","3D","Node"]</span>,</div>
+                      <div style={{paddingLeft:14}}><span style={{color:"#9cdcfe"}}>passion</span>: <span style={{color:"#ce9178"}}>"Building great UX"</span></div>
+                      <div>{"}"}</div>
+                    </div>
+                  </div>
+                </div>
+              </>}
+
+              {/* ── ABOUT ── */}
+              {activeSection===1 && <>
+                <div className="hud-tag">✦ 02 / 06 — ABOUT</div>
+                <h1 className="hud-title"><span className="grad">About Me</span></h1>
+                <div className="hud-sub">Who am I?</div>
+                <p className="hud-desc">I'm a developer obsessed with the limits of the web. 3+ years building beautiful, high-performance products with React, Three.js and Node.js.</p>
+                <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
+                  {[
+                    {icon:"🌐",title:"Web Developer",    desc:"React, Next.js, modern CSS"},
+                    {icon:"📱",title:"React Native Dev",  desc:"Cross-platform mobile apps"},
+                    {icon:"🎨",title:"3D & UI Designer",  desc:"Three.js, WebGL, Figma"},
+                    {icon:"🎬",title:"Video Editor",       desc:"Premiere Pro, After Effects"},
+                  ].map((s,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(123,47,255,.15)",borderRadius:10}}>
+                      <span style={{fontSize:22,flexShrink:0}}>{s.icon}</span>
+                      <div>
+                        <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>{s.title}</div>
+                        <div style={{fontSize:11,color:"rgba(160,170,255,.5)",marginTop:2}}>{s.desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button className="hud-cta" onClick={()=>navTo(2)}>See My Work →</button>
+              </>}
+
+              {/* ── WORK ── */}
+              {activeSection===2 && <>
+                <div className="hud-tag">✦ 03 / 06 — WORK</div>
+                <h1 className="hud-title"><span className="grad">Projects</span></h1>
+                <div className="hud-sub">Live Sites — Click to Open</div>
+                <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16,maxHeight:"52vh",overflowY:"auto",paddingRight:4}}>
+                  {PROJECTS.map((p,i)=>(
+                    <a key={i} href={p.link} target="_blank" rel="noopener noreferrer" className="proj-card">
+                      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:5}}>
+                        <span style={{fontSize:20}}>{p.emoji}</span>
+                        <span style={{fontSize:13,fontWeight:700,color:"#fff"}}>{p.title}</span>
+                        <span style={{marginLeft:"auto",fontSize:12,color:"rgba(0,195,255,.6)"}}>↗</span>
+                      </div>
+                      <p style={{fontSize:11,color:"rgba(160,170,255,.5)",lineHeight:1.55,marginBottom:7}}>{p.desc}</p>
+                      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                        {p.tags.map((t,j)=><span key={j} className="stag">{t}</span>)}
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </>}
+
+              {/* ── SKILLS ── */}
+              {activeSection===3 && <>
+                <div className="hud-tag">✦ 04 / 06 — SKILLS</div>
+                <h1 className="hud-title"><span className="grad">Tech Stack</span></h1>
+                <div className="hud-sub">My Arsenal</div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:8,maxWidth:380,marginBottom:20}}>
+                  {TECH.map((t,i)=><Hex key={i} {...t}/>)}
+                </div>
+                <button className="hud-cta">Download CV →</button>
+              </>}
+
+              {/* ── VIDEO ── */}
+              {activeSection===4 && <>
+                <div className="hud-tag" style={{color:"#ff6ec7",borderColor:"#ff6ec7"}}>✦ 05 / 06 — VIDEO EDITING</div>
+                <h1 className="hud-title"><span style={{background:"linear-gradient(135deg,#ff6ec7,#7b2fff,#00c3ff)",backgroundSize:"200%",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Video Editing</span></h1>
+                <div className="hud-sub" style={{color:"rgba(255,160,220,.6)"}}>Cinematic · Motion · VFX</div>
+                <p className="hud-desc">Beyond code — crafting cinematic stories through motion, colour and sound using Premiere Pro &amp; After Effects.</p>
+                {/* Tools */}
+                <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
+                  {[["🎞️","Premiere"],["✨","After FX"],["🎨","DaVinci"],["🔊","Audition"]].map(([ic,lb])=>(
+                    <div key={lb} style={{display:"flex",alignItems:"center",gap:5,padding:"5px 10px",background:"rgba(255,110,200,.07)",border:"1px solid rgba(255,110,200,.2)",borderRadius:999,fontSize:11,color:"rgba(255,200,240,.75)",fontWeight:500}}>
+                      <span>{ic}</span><span>{lb}</span>
+                    </div>
+                  ))}
+                </div>
+                {/* Work cards */}
+                <div style={{display:"flex",flexDirection:"column",gap:8,maxHeight:"38vh",overflowY:"auto",paddingRight:4}}>
+                  {VIDEO_WORK.map((v,i)=>(
+                    <div key={i} className="vid-card">
+                      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:5}}>
+                        <span style={{fontSize:20}}>{v.emoji}</span>
+                        <span style={{fontSize:13,fontWeight:700,color:"#fff"}}>{v.title}</span>
+                        <span style={{marginLeft:"auto",width:28,height:28,borderRadius:"50%",background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,flexShrink:0}}>▶</span>
+                      </div>
+                      <p style={{fontSize:11,color:"rgba(160,170,255,.5)",lineHeight:1.55,marginBottom:7}}>{v.desc}</p>
+                      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                        {v.tags.map((t,j)=><span key={j} className="vtag">{t}</span>)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>}
+
+              {/* ── CONTACT ── */}
+              {activeSection===5 && <>
+                <div className="hud-tag">✦ 06 / 06 — CONTACT</div>
+                <h1 className="hud-title"><span className="grad">Contact</span></h1>
+                <div className="hud-sub">Let's build together</div>
+                <p className="hud-desc">Have a project in mind? I'm ready to launch something extraordinary into the cosmos.</p>
+                {/* Gmail button */}
+                <a
+                  href="https://mail.google.com/mail/u/0/?view=cm&fs=1&to=vy91828%40gmail.com&su=Hey%20Vivek%20%E2%80%94%20Let%27s%20connect!&body=Hi%20Vivek%2C%0A%0AI%20found%20your%20portfolio%20and%20would%20love%20to%20chat!%0A%0A"
+                  target="_blank" rel="noopener noreferrer"
+                  className="send-btn"
+                  style={{marginBottom:24,display:"inline-flex"}}
+                >
+                  <span>✉️</span><span>Send Me a Message</span><span>→</span>
+                </a>
+                {/* Info */}
+                <div style={{display:"flex",flexDirection:"column",gap:12}}>
+                  {[
+                    {icon:"📧",label:"Email",  value:"vy91828@gmail.com"},
+                    {icon:"📍",label:"Location",value:"India · Open to Remote"},
+                    {icon:"🟢",label:"Status",  value:"Available for work",vc:"#00ff88"},
+                  ].map(r=>(
+                    <div key={r.label} style={{display:"flex",alignItems:"center",gap:10}}>
+                      <div style={{width:32,height:32,borderRadius:8,background:"rgba(123,47,255,.12)",border:"1px solid rgba(123,47,255,.25)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{r.icon}</div>
+                      <div>
+                        <div style={{fontSize:9,color:"rgba(180,180,255,.4)",letterSpacing:".08em",textTransform:"uppercase",marginBottom:1}}>{r.label}</div>
+                        <div style={{fontSize:12,color:r.vc||"rgba(200,200,255,.8)",fontWeight:500}}>{r.value}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>}
+
+            </div>
+          </div>
+
+          {/* ── SECTION DOTS ── */}
+          <div className="snav">
+            {SECTIONS.map((s,i)=>(
+              <div key={s} className={`sdw${activeSection===i?" active":""}`} onClick={()=>navTo(i)}>
+                <span className="slbl2">{s}</span>
+                <div className="sdot"/>
+              </div>
+            ))}
+          </div>
+
+          {/* Planet tooltip */}
+          {hoveredPlanet!==null && (
+            <div className="ptt">Click to travel → {SECTIONS[hoveredPlanet]}</div>
+          )}
+
+          {/* Scroll hint */}
+          <div className="bhud">
+            <span className="sht">scroll to explore</span>
+            <div className="sw3"><div className="sdot2"/></div>
+            <span className="sht">· click planets to travel</span>
+          </div>
+
+          {/* Coordinates */}
+          <div className="coords2">
+            SECTOR_{String(activeSection+1).padStart(2,"0")} · VIVEK.DEV · {new Date().getFullYear()}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<SpacePortfolio/>);
+</script>
+</body>
+</html>
